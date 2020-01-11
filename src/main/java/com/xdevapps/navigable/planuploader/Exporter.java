@@ -32,13 +32,12 @@ public class Exporter{
     
     private FileWriter fileWriter;
     private FileReader fileReader;
-    ImagePanel imagePanel;
     private String fileName;
     String url = "";
 
     public Exporter() throws IOException{
         
-        JFileChooser fileChooser = new JFileChooser("/home/shubham/");
+        JFileChooser fileChooser = new JFileChooser("/home/athang213/");
         if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
         {
             fileWriter = new FileWriter(fileChooser.getSelectedFile());
@@ -47,12 +46,14 @@ public class Exporter{
         fileName = fileChooser.getSelectedFile().getPath();
     }
     
-    public void writeVertices(ArrayList<ImagePanel.Pair> vertices) throws IOException{
+    public void writeVertices(ArrayList<ImagePanel.Pair> vertices,int originX,int originY) throws IOException{
         int i = 0;
         fileWriter.write("V\n");
         for(ImagePanel.Pair vertex : vertices)
         {
-            fileWriter.write(i+" "+vertex.x+" "+vertex.y+"\n");
+            int x = vertex.x-originX;
+            int y = vertex.y-originY;
+            fileWriter.write(i+" "+ x +" "+y+"\n");
             i++;
         }
     }

@@ -65,7 +65,7 @@ public class StorageHandler {
         DocumentReference doc = db.collection("plans").document("RahulRaj");
         Map<String, Object> data = new HashMap<>();
         data.put("Name", "Rahul Raj Mall");
-        data.put("URL", blob.getSelfLink());
+        data.put("URL", "plan-1.txt");
         
         ApiFuture<WriteResult> result = doc.set(data);
         /*System.out.println("Update time: " + result.get().getUpdateTime());*/

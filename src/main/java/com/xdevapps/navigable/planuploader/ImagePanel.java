@@ -37,6 +37,12 @@ public class ImagePanel extends JPanel{
     private ArrayList<Pair> points;
     private ArrayList<Pair> centres;
     private ArrayList<Pair> edges;
+    private int selectedPt;
+    private Pair origin;
+    
+    public Pair getOrigin() {
+        return origin;
+    }
     
     private BufferedImage image;
 
@@ -53,6 +59,8 @@ public class ImagePanel extends JPanel{
         this.centres = new ArrayList<>();
         this.polygons = new ArrayList<>();
         this.edges = new ArrayList<>();
+        selectedPt = -1;
+        origin = new Pair(0, 0);
     }
     
     @Override
@@ -66,8 +74,8 @@ public class ImagePanel extends JPanel{
         ((Graphics2D)graphics).setStroke(new BasicStroke(2));
         graphics.setColor(Color.BLUE);
         
-        graphics.drawLine(0,10,1280,10);
-        graphics.drawLine(10,0,10,1280 * image.getHeight() / image.getWidth());
+        graphics.drawLine(0+origin.x,origin.y,1280+origin.x,origin.y);
+        graphics.drawLine(origin.x,0+origin.y,origin.x,1280 * image.getHeight() / image.getWidth()+origin.y);
         
         ((Graphics2D)graphics).setStroke(new BasicStroke(2));
         graphics.setColor(Color.RED);
@@ -96,6 +104,14 @@ public class ImagePanel extends JPanel{
         for(Pair centre : centres) {
             graphics.fillOval(centre.x, centre.y, 5, 5);
         }
+        
+        if(selectedPt >= 0){
+            ((Graphics2D)graphics).setStroke(new BasicStroke(2.5f));
+            graphics.setColor(Color.ORANGE);
+            graphics.drawOval(centres.get(selectedPt).x-2,centres.get(selectedPt).y-2,8,8);
+        }   
+        
+        
         graphics.dispose();
     }    
 
@@ -161,12 +177,12 @@ public class ImagePanel extends JPanel{
         
     }
     
-    public void writeToFile() throws IOException{
+    public byte [] writeToFile() throws IOException{
             Exporter ex = new Exporter();
-            ex.writeVertices(centres);
+            ex.writeVertices(centres,origin.x,origin.y);
             ex.writeEdges(edges);
             ex.flush();
-            ex.exportBytes();
+            return ex.exportBytes();
     }
     
     public void deletePolygon(int x,int y) {
@@ -218,7 +234,17 @@ public class ImagePanel extends JPanel{
     		}
     	}
     	
-    	
+    }
+    
+    public void highlightPt(int index){
+        selectedPt = index;
+        repaint();
+    }
+    
+    public void setAxis(int x,int y){
+        origin.x = x;
+        origin.y = y;
+        repaint();
     }
     
 }
