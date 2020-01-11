@@ -14,6 +14,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+
 import javax.swing.*;
 
 /**
@@ -24,7 +26,7 @@ public class ImagePanel extends JPanel{
     
     public class Pair {
         int x, y;
-
+        
         public Pair(int x, int y) {
             this.x = x;
             this.y = y;
@@ -73,6 +75,7 @@ public class ImagePanel extends JPanel{
             graphics.drawLine(point.x-3, point.y-3, point.x+3, point.y+3);
             graphics.drawLine(point.x-3, point.y+3, point.x+3, point.y-3);           
         }
+        
         ((Graphics2D)graphics).setStroke(new BasicStroke(1.5f));
         graphics.setColor(Color.blue);
         for(Polygon polygon : polygons) {
@@ -81,12 +84,14 @@ public class ImagePanel extends JPanel{
             graphics.setColor(Color.RED);
             graphics.drawPolygon(polygon);
         }
+        
         graphics.setColor(Color.CYAN);
         for(Pair pair : edges) {
             Pair p1 = centres.get(pair.x);
             Pair p2 = centres.get(pair.y);
             graphics.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
+        
         graphics.setColor(Color.BLUE);
         for(Pair centre : centres) {
             graphics.fillOval(centre.x, centre.y, 5, 5);
@@ -161,6 +166,59 @@ public class ImagePanel extends JPanel{
             ex.writeVertices(centres);
             ex.writeEdges(edges);
             ex.flush();
+            ex.exportBytes();
+    }
+    
+    public void deletePolygon(int x,int y) {
+    	int i,j;
+    	ArrayList<Integer> temp = new ArrayList<>(0); 
+    	for(i = 0;i < polygons.size();i++) {
+    		if(polygons.get(i).contains(x,y)) {
+    			System.out.println("Size : "+edges.size());
+    			for(j=0;j<edges.size();j++)
+    			{	
+    				System.out.println("i : "+i+" Src : "+edges.get(j).x+" Dest : "+edges.get(j).y+" j : "+j);
+    				if(edges.get(j).x == i || edges.get(j).y == i)
+    				{
+    					temp.add(j);
+    				}
+    			}
+    			Collections.sort(temp, Collections.reverseOrder());
+    			
+    			for(int temp1 : temp)
+    			{	
+    				edges.remove(temp1);
+    			}
+    			for(Pair p : edges)
+    			{
+    				System.out.println(p.x +" "+ p.y);
+    			}
+    			
+    			polygons.remove(i);
+    			//System.out.println("Hello1");
+    			centres.remove(i);
+    			for(Pair p : edges)
+    			{
+    				if(p.x > i)
+    				{
+    					p.x--;
+    				}
+    				
+    				if(p.y > i)
+    				{
+    					p.y--;
+    				}
+    				//System.out.println(p.x +" "+ p.y);
+    			}
+    			/*for(Pair p : edges)
+    			{
+    				System.out.println(p.x +" "+ p.y);
+    			}*/
+    			break;
+    		}
+    	}
+    	
+    	
     }
     
 }
