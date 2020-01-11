@@ -26,6 +26,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +36,11 @@ import java.util.Map;
  */
 public class StorageHandler {
 
+    private Bucket bucket;
+    private Firestore db;
+    
     public StorageHandler() throws FileNotFoundException, IOException {
-        FileInputStream serviceAccount = new FileInputStream("navigable-25e2d-firebase-adminsdk-n7son-acb8463d31.json");
+        FileInputStream serviceAccount = new FileInputStream("navigable-25e2d-firebase-adminsdk-n7son-4ac20a54a4.json");
         
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -46,11 +50,17 @@ public class StorageHandler {
         
         FirebaseApp.initializeApp(options);
         
-        Bucket bucket = StorageClient.getInstance().bucket();
+        bucket = StorageClient.getInstance().bucket();
+       
+        db = FirestoreClient.getFirestore();
         
-        Blob blob = bucket.create("plan-1.txt", "Hello, Cloud".getBytes("UTF-8"));
         
-        Firestore db = FirestoreClient.getFirestore();
+    }
+    
+    public void uploadFile(byte[] bytes, int size) throws UnsupportedEncodingException {
+        
+//        Blob blob = bucket.create("plan-1.txt", "Hello, Cloud".getBytes("UTF-8"));
+        Blob blob = bucket.create("plan-1.txt", bytes, "text/plain");
         
         DocumentReference doc = db.collection("plans").document("RahulRaj");
         Map<String, Object> data = new HashMap<>();
@@ -67,9 +77,6 @@ public class StorageHandler {
         for (Blob _blob : blobs.iterateAll()) {
             System.out.println("Blob:"+_blob.getName());
         }
-        
-        
-        
     }
     
 }
