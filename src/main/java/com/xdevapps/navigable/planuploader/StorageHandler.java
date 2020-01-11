@@ -5,17 +5,29 @@
  */
 package com.xdevapps.navigable.planuploader;
 
+import com.google.api.core.ApiFuture;
 import com.google.api.gax.paging.Page;
 import com.google.cloud.storage.Bucket;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -28,6 +40,7 @@ public class StorageHandler {
         
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setProjectId("navigable-25e2d")
                 .setStorageBucket("navigable-25e2d.appspot.com")
                 .build();
         
@@ -35,11 +48,28 @@ public class StorageHandler {
         
         Bucket bucket = StorageClient.getInstance().bucket();
         
-        bucket.create("plan-1.txt", "Hello, Cloud".getBytes("UTF-8"));
+        Blob blob = bucket.create("plan-1.txt", "Hello, Cloud".getBytes("UTF-8"));
+        
+        Firestore db = FirestoreClient.getFirestore();
+        
+        DocumentReference doc = db.collection("plans").document("RahulRaj");
+        Map<String, Object> data = new HashMap<>();
+        data.put("Name", "Rahul Raj Mall");
+        data.put("URL", blob.getSelfLink());
+        
+        ApiFuture<WriteResult> result = doc.set(data);
+        /*System.out.println("Update time: " + result.get().getUpdateTime());*/
+        
+        System.out.println("blob self link:" + blob.getSelfLink());
+        System.out.println("blob media link:" + blob.getMediaLink());
+        
+        Page<Blob> blobs = bucket.list();
+        for (Blob _blob : blobs.iterateAll()) {
+            System.out.println("Blob:"+_blob.getName());
+        }
+        
+        
+        
     }
-    
-    
-            
-            
     
 }
