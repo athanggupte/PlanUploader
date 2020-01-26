@@ -47,7 +47,9 @@ public class PlanUploader extends JFrame implements MouseListener {
     ImagePanel imagePanel;
     JTextPane statusPanel;
     StorageHandler storageHandler;
-    int srcPt;
+    int x_pt;
+    int y_pt;
+    int flag = 0;
     boolean isSrcSet = false;
     
     public static enum DrawMode {
@@ -197,27 +199,18 @@ public class PlanUploader extends JFrame implements MouseListener {
 	    }
 	} else if(drawMode == DrawMode.EDGE){
 	    if(me.getButton() == MouseEvent.BUTTON1) {
-	        int closestPoint = imagePanel.isCloseTo(x, y);
-	        statusPanel.setText("closest:" + closestPoint);
-	        if(closestPoint != -1){
-	            if(isSrcSet) {
-                        imagePanel.highlightPt(closestPoint);
-	                imagePanel.drawEdge(srcPt, closestPoint);
-	            }
-	            else {
-	                srcPt = closestPoint;
-                        imagePanel.highlightPt(closestPoint);
-	                statusPanel.setText("src:" + srcPt);
-	            }
-	            isSrcSet = !isSrcSet;
-	            repaint();
-	        }
-	    } 
+       
+	       // statusPanel.setText("closest:" + closestPoint);
+                imagePanel.highlightPt(x, y);
+                
+	        imagePanel.drawEdge(x, y);
+	        repaint();
+            } 
 	} else if(drawMode == DrawMode.SETAXIS){
             imagePanel.setAxis(x,y);
             repaint();
         } else if(drawMode == DrawMode.DELETE){
-            imagePanel.deletePolygon(x,y);	
+        //    imagePanel.deletePolygon(x,y);	
             repaint();
         }
     }

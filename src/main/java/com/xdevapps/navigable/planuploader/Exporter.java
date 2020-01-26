@@ -58,16 +58,32 @@ public class Exporter{
         }
     }
     
-    public void writeEdges(ArrayList<ImagePanel.Pair> edges) throws IOException{
-        int i = 0;
-        fileWriter.write("E\n");
-        for(ImagePanel.Pair edge : edges)
-        {
-            fileWriter.write(i+" "+edge.x+" "+edge.y+"\n");
-            i++;
+    public void writeEdges(ArrayList<ArrayList<ImagePanel.Pair>> edges,ArrayList<ImagePanel.Pair> centres) throws IOException{
+         for(int j = 0;j<edges.size();j++) {
+            fileWriter.write("P"+"\n");
+            for(int i=0;i<edges.get(j).size();i++)
+            {   
+                int temp = isCentre(edges.get(j).get(i).x,edges.get(j).get(i).y,centres);
+                if(temp == -1)
+                    fileWriter.write(edges.get(j).get(i).x+" "+edges.get(j).get(i).y+"\n");
+                else
+                    fileWriter.write(temp+"\n");
+            }    
         }
     }
 
+    public int isCentre(int x,int y,ArrayList<ImagePanel.Pair> centres)
+    {
+        for(ImagePanel.Pair pair : centres)
+        {
+            if(pair.x == x && pair.y == y)
+            {
+                return centres.indexOf(pair);
+            }
+        }
+        return -1;
+    }
+    
     public void flush() throws IOException {
         fileWriter.flush();
     }

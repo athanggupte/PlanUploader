@@ -32,13 +32,15 @@ public class ImagePanel extends JPanel{
             this.y = y;
         }
     }
-    
+        
     private ArrayList<Polygon> polygons;
     private ArrayList<Pair> points;
     private ArrayList<Pair> centres;
-    private ArrayList<Pair> edges;
-    private int selectedPt;
+    private ArrayList<ArrayList<Pair>> edges;
+    private ArrayList<Pair> path;
+    private Pair selectedPt;
     private Pair origin;
+    private int isPathSrcSet;
     
     public Pair getOrigin() {
         return origin;
@@ -58,9 +60,11 @@ public class ImagePanel extends JPanel{
         this.points = new ArrayList<>();
         this.centres = new ArrayList<>();
         this.polygons = new ArrayList<>();
-        this.edges = new ArrayList<>();
-        selectedPt = -1;
+        this.edges = new ArrayList< ArrayList<Pair> >(0);
+        this.path = new ArrayList<>();
+        selectedPt = null;
         origin = new Pair(0, 0);
+        isPathSrcSet = 0;
     }
     
     @Override
@@ -94,21 +98,33 @@ public class ImagePanel extends JPanel{
         }
         
         graphics.setColor(Color.CYAN);
-        for(Pair pair : edges) {
-            Pair p1 = centres.get(pair.x);
-            Pair p2 = centres.get(pair.y);
-            graphics.drawLine(p1.x, p1.y, p2.x, p2.y);
+        for(int j = 0;j<edges.size();j++) {
+            int temp = edges.get(j).size()-1;
+            
+            for(int i=0;i<edges.get(j).size()-1;i++)
+            {    
+                Pair p1 = new Pair(edges.get(j).get(i).x,edges.get(j).get(i).y);
+                Pair p2 = new Pair(edges.get(j).get(i+1).x,edges.get(j).get(i+1).y);
+                graphics.drawLine(p1.x, p1.y, p2.x, p2.y);
+            }    
         }
+        
+        for(int i=0;i<path.size()-1;i++)
+        {    
+                Pair p1 = new Pair(path.get(i).x,path.get(i).y);
+                Pair p2 = new Pair(path.get(i+1).x,path.get(i+1).y);
+                graphics.drawLine(p1.x, p1.y, p2.x, p2.y);
+        }    
         
         graphics.setColor(Color.BLUE);
         for(Pair centre : centres) {
             graphics.fillOval(centre.x, centre.y, 5, 5);
         }
         
-        if(selectedPt >= 0){
+        if(selectedPt != null){
             ((Graphics2D)graphics).setStroke(new BasicStroke(2.5f));
             graphics.setColor(Color.ORANGE);
-            graphics.drawOval(centres.get(selectedPt).x-2,centres.get(selectedPt).y-2,8,8);
+            graphics.drawOval(selectedPt.x-2,selectedPt.y-2,8,8);
         }   
         
         
@@ -141,8 +157,27 @@ public class ImagePanel extends JPanel{
         System.out.println("POINTS CLEARED : " + points.size());
     }
     
-    public void drawEdge(int p1, int p2) {
-        edges.add(new Pair(p1, p2));
+    public void drawEdge(int x1, int y1) {
+         System.out.println("MouseClicked(" + x1 + "," + y1 + ")");
+        int index = isCloseTo(x1,y1);
+        System.out.println("Index: "+index);
+        if(isPathSrcSet == 0 && index != -1)
+        {
+            path.add(new Pair(centres.get(index).x,centres.get(index).y));
+            isPathSrcSet = 1;
+        }
+        else if(isPathSrcSet == 1 && index != -1)
+        {
+            path.add(new Pair(centres.get(index).x,centres.get(index).y));
+            ArrayList<Pair> temp = path;
+            edges.add(temp);
+            path = new ArrayList<Pair>();
+            isPathSrcSet = 0;
+        }
+        else if(isPathSrcSet == 1 && index == -1)
+        {
+            path.add(new Pair(x1,y1));
+        }
     }
     
     void getCentroid(int[] x, int[] y, int length) {
@@ -174,18 +209,19 @@ public class ImagePanel extends JPanel{
         this.polygons.clear();
         this.centres.clear();
         this.edges.clear();
+        selectedPt = null;
         
     }
     
     public byte [] writeToFile() throws IOException{
             Exporter ex = new Exporter();
             ex.writeVertices(centres,origin.x,origin.y);
-            ex.writeEdges(edges);
+            ex.writeEdges(edges,centres);
             ex.flush();
             return ex.exportBytes();
     }
     
-    public void deletePolygon(int x,int y) {
+  /*  public void deletePolygon(int x,int y) {
     	int i,j;
     	ArrayList<Integer> temp = new ArrayList<>(0); 
     	for(i = 0;i < polygons.size();i++) {
@@ -226,18 +262,30 @@ public class ImagePanel extends JPanel{
     				}
     				//System.out.println(p.x +" "+ p.y);
     			}
-    			/*for(Pair p : edges)
+    			for(Pair p : edges)
     			{
     				System.out.println(p.x +" "+ p.y);
-    			}*/
+    			}
+                        selectedPt = -1;
     			break;
     		}
     	}
     	
-    }
+    }*/
+
     
-    public void highlightPt(int index){
-        selectedPt = index;
+    public void highlightPt(int x,int y){
+        int index = isCloseTo(x,y);
+        selectedPt = new Pair(0,0);
+        if(index == -1){  
+            selectedPt.x = x;
+            selectedPt.y = y;
+        }
+        else
+        {
+            selectedPt.x = centres.get(index).x;
+            selectedPt.y = centres.get(index).y;
+        }
         repaint();
     }
     
